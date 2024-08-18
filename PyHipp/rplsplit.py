@@ -1,6 +1,7 @@
 import numpy as np 
 import neo  
 from neo.io import BlackrockIO 
+import spikeinterface.extractors as se
 import os 
 import glob 
 from . import rplraw 
@@ -24,10 +25,9 @@ class RPLSplit(DPT.DPObject):
 			DPT.DPObject.__init__(self, *args, **kwargs)
 
 	def create(self, *args, **kwargs):
-
 		if not self.args['SkipParallel']: 
 			print('Calling RPLParallel...')
-			rp = RPLParallel(saveLevel = 1)
+		rp = RPLParallel(saveLevel = 1)
 
 		ns5File = glob.glob('*.ns5')
 		if len(ns5File) > 1: 
@@ -42,28 +42,31 @@ class RPLSplit(DPT.DPObject):
 			return 
 		# create object
 		DPT.DPObject.create(self, *args, **kwargs)
-		reader = BlackrockIO(ns5File[0])
-		bl = reader.read_block(lazy = True)
+		#reader = BlackrockIO(ns5File[0])
+		rp = se.read_ripple_recording()
+		#bl = reader.read_block(lazy = True)
 		print('.ns5 file loaded.')
-		segment = bl.segments[0]
-		if len(glob.glob('*.ns2')) == 0: # Check if .ns2 file is present, if its not present adjust the index for raw signals accordingly 
-			index = 1 
-		else:
-			index = 2
-		chx = bl.channel_indexes[index] # For the raw data.
+		#segment = bl.segments[0]
+		#if len(glob.glob('*.ns2')) == 0: # Check if .ns2 file is present, if its not present adjust the index for raw signals accordingly 
+		#	index = 1 
+		#else:
+		#	index = 2
+		#chx = bl.channel_indexes[index] # For the raw data.
 		analogInfo = {} 
-		analogInfo['SampleRate'] = float(segment.analogsignals[index].sampling_rate)
-		annotations = chx.annotations
-		names = list(map(lambda x: str(x), chx.channel_names))
+		#analogInfo['SampleRate'] = float(segment.analogsignals[index].sampling_rate)
+		analogInfo['SampleRate']  = float(rp.sampling_frequency)
+		#annotations = chx.annotations
+		annotations = rp._properties
+		names = list(map(lambda x: str(x), rp.get_channel_ids()))
 
 		def process_channel(data, annotations, chxIndex, analogInfo, channelNumber, returnData = False):
 			analogInfo['Units'] = 'uV'
-			analogInfo['HighFreqCorner'] = float(annotations['nev_hi_freq_corner'][chxIndex])
-			analogInfo['HighFreqOrder'] = annotations['nev_hi_freq_order'][chxIndex]
-			analogInfo['HighFilterType'] = annotations['nev_hi_freq_type'][chxIndex]
-			analogInfo['LowFreqCorner'] = float(annotations['nev_lo_freq_corner'][chxIndex])
-			analogInfo['LowFreqOrder'] = annotations['nev_lo_freq_order'][chxIndex]
-			analogInfo['LowFilterType'] = annotations['nev_lo_freq_type'][chxIndex]
+			analogInfo['HighFreqCorner'] = float(annotations['high_freq_corner'][chxIndex])
+			analogInfo['HighFreqOrder'] = annotations['high_freq_order'][chxIndex]
+			analogInfo['HighFilterType'] = annotations['high_filter_type'][chxIndex]
+			analogInfo['LowFreqCorner'] = float(annotations['low_freq_corner'][chxIndex])
+			analogInfo['LowFreqOrder'] = annotations['low_freq_order'][chxIndex]
+			analogInfo['LowFilterType'] = annotations['low_filter_type'][chxIndex]
 			analogInfo['MaxVal'] = np.amax(data)
 			analogInfo['MinVal'] = np.amin(data)
 			analogInfo['NumberSamples'] = len(data)
@@ -124,16 +127,17 @@ class RPLSplit(DPT.DPObject):
 		channelNumbers = []
 		channelIndexes = []
 		for i in self.args['channel']:
-			chxIndex = list(filter(lambda x: int(i) == int(x[6:len(x) - 1]),names))
-			if len(chxIndex) > 0:
-				chxIndex = names.index(chxIndex[0])
-				channelNumbers.append(i)
-				channelIndexes.append(chxIndex)
+			# TODO: Make this more flexible. for now, pyns uses Raw x as name for channel x
+			#chxIndex = list(filter(lambda x: int(i) == int(x[6:len(x) - 1]),names))
+			chxIndex = names.index('raw {}'.format(i))
+			channelNumbers.append(i)
+			channelIndexes.append(chxIndex)
 
 		if kwargs.get('byChannel',0):
 			for ind, idx in enumerate(channelIndexes):
-				data = np.array(segment.analogsignals[index].load(time_slice = None, channel_indexes = [idx]))
+				#data = np.array(segment.analogsignals[index].load(time_slice = None, channel_indexes = [idx]))
 				print('Processing channel {:03d}'.format(channelNumbers[ind]))
+				data = rp.get_traces(start_frame=0, end_frame=rp.get_num_frames()-1, segment_index=0, channel_ids=names[idx:idx+1])
 				process_channel(data, annotations, idx, analogInfo, channelNumbers[ind])
 				del data # to create RAM space to load in the next channel data.
 			return 
