@@ -6,7 +6,7 @@ import sys
 
 # set constants
 file_path = "/data/picasso/envlist.hkl"
-lock_path = "/data/picasso/envlist.khl.lock"
+lock_path = "/data/picasso/envlist.hkl.lock"
 time_out_secs = 60
 
 # program modes
