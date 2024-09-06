@@ -25,5 +25,5 @@ os.chdir('session01/array02'); DPT.objects.processDirs(level='channel', cmd='imp
 print(time.localtime()); \
 print(time.time()-t0);"
 
-aws sns publish --topic-arn arn:aws:sns:ap-southeast-1:203918889266:awsnotify --message "RS2þJobDone"
+aws sns publish --topic-arn arn:aws:sns:ap-southeast-1:203918889266:awsnotify --message "RS2JobDone"
 
