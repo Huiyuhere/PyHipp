@@ -1,0 +1,2 @@
+/var/spool/slurmd/job00332/slurm_script: line 17: syntax error near unexpected token `('
+/var/spool/slurmd/job00332/slurm_script: line 17: `lfall = DPT.objects.processDirs(dirs=None, exclude=['*eye*', '*mountains*'], objtype=pyh.FreqSpectrum, saveLevel=1); \'
