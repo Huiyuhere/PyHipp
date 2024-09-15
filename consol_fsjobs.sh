@@ -19,5 +19,9 @@ cmd1="${cmd1} /data/src/PyHipp/fsall-slurm.sh"
 echo $cmd1
 eval $cmd1
 
+<<<<<<< HEAD
 aws sns publish --topic-arn arn:aws:sns:ap-southeast-1:203918889266:awsnotify --message "FSJobDone"
 
+=======
+arn:aws:sns:ap-southeast-1:203918889266:awsnotify --message "ConsoleFSJobSumbitted"
+>>>>>>> b8447afd68b046bd899fa780179187bfd60df882
