@@ -32,4 +32,4 @@ conda deactivate
 /data/src/PyHipp/envlist.py $envarg
 
 
-aws sns publish --topic-arn arn:aws:sns:ap-southeast-1:018084650241:awsnotify --message "RSLHPJobDone"
+aws sns publish --topic-arn arn:aws:sns:ap-southeast-1:203918889266:awsnotify --message "RSHPSortJobDone"

@@ -2,7 +2,7 @@
 
 temp1=($(squeue))
 
-cmd1="sbatch --dependency=afterok:"
+cmd1="sbatch --dependency=afterany:"
 
 counter1=0
 for i in "${temp1[@]}"; do
@@ -18,3 +18,5 @@ cmd1="${cmd1} /data/src/PyHipp/ec2snapshot.sh"
 
 echo $cmd1
 eval $cmd1
+
+arn:aws:sns:ap-southeast-1:203918889266:awsnotify --message "ConsoleJobSumbitted"
